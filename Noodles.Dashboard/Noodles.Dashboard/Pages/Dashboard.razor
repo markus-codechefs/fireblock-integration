@@ -1,0 +1,85 @@
+﻿@page "/dashboard"
+@inject IJSRuntime JS
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="row">
+    <div class="col-md-8">
+        <div id="btcChart" style="height: 400px;"></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h5>Portfolio Value</h5>
+            <p>$@portfolioValue</p>
+
+            <h6>Monthly Performance</h6>
+            <p class="@GetPerformanceClass()">@monthlyPerformance %</p>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5>BTC News Feed</h5>
+    <ul>
+        @foreach(var item in btcNews)
+        {
+            <li><a href="@item.Url" target="_blank">@item.Title</a></li>
+        }
+    </ul>
+</div>
+
+@code {
+    private decimal portfolioValue = 15234.75m;
+    private decimal monthlyPerformance = 3.5m;
+
+    private List<NewsItem> btcNews = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await LoadChartAsync();
+            await LoadNewsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadChartAsync()
+    {
+        var options = new
+        {
+            chart = new { type = "line" },
+            title = new { text = "BTC Market Overview" },
+            xAxis = new { categories = new[] { "Mon", "Tue", "Wed", "Thu", "Fri" } },
+            yAxis = new { title = new { text = "Price (USD)" } },
+            series = new[] {
+                new {
+                    name = "BTC",
+                    data = new[] { 27000, 27350, 26800, 27500, 28000 }
+                }
+            }
+        };
+
+        await JS.InvokeVoidAsync("renderHighChart", "btcChart", options);
+    }
+
+    private async Task LoadNewsAsync()
+    {
+        // For demo purposes, mock data
+        btcNews = new List<NewsItem>
+        {
+            new NewsItem { Title = "Bitcoin breaks $28,000", Url = "https://news.bitcoin.com" },
+            new NewsItem { Title = "ETF inflows boost BTC", Url = "https://cointelegraph.com" },
+            new NewsItem { Title = "Whale alert: large BTC moves", Url = "https://cryptobriefing.com" }
+        };
+    }
+
+    private string GetPerformanceClass() =>
+        monthlyPerformance >= 0 ? "text-success" : "text-danger";
+
+    class NewsItem
+    {
+        public string Title { get; set; }
+        public string Url { get; set; }
+    }
+}
