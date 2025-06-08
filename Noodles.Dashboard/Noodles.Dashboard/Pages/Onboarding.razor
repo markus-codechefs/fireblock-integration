@@ -1,0 +1,43 @@
+﻿@page "/onboarding"
+
+<PageTitle>Client Onboarding</PageTitle>
+
+<Layout>
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <h2>Onboard a New Client</h2>
+            <p class="text-muted">Create a wallet for crypto assets</p>
+        </div>
+
+        <div class="mb-3">
+            <TextEdit Placeholder="Just a nice input..." />
+        </div>
+
+        <div class="mb-3">
+            <TextEdit Placeholder="Another cool field..." />
+        </div>
+
+        <div class="d-grid gap-2">
+            <Button Color="Color.Primary" Clicked="@CreateWallet">
+                Create Wallet
+            </Button>
+        </div>
+
+        @if (isWalletCreated)
+        {
+            <Alert Color="Color.Success" Class="mt-4">
+                🎉 Wallet created successfully!
+            </Alert>
+        }
+    </div>
+</Layout>
+
+@code {
+    private bool isWalletCreated = false;
+
+    private void CreateWallet()
+    {
+        // Simulate wallet creation
+        isWalletCreated = true;
+    }
+}
