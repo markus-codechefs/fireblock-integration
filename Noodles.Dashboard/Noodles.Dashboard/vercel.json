@@ -1,0 +1,27 @@
+{
+  "buildCommand": "dotnet publish -c Release -o dist",
+  "outputDirectory": "dist",
+  "framework": null,
+  "functions": {
+    "dist/**/*.dll": {
+      "runtime": "dotnet"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+} 
