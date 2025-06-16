@@ -5,7 +5,14 @@
 
 <div class="row">
     <div class="col-md-8">
-        <div id="btcChart" style="height: 400px;"></div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">BTC Market Overview</h5>
+                <div style="height: 400px; position: relative;">
+                    <canvas id="btcChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-md-4">
         <div class="card p-3 mb-3">
@@ -33,10 +40,12 @@
     private decimal monthlyPerformance = 3.5m;
 
     private List<NewsItem> btcNews = new();
+    private List<decimal> btcPrices = new() { 27000, 27350, 26800, 27500, 28000 };
+    private List<string> btcCategories = new() { "Mon", "Tue", "Wed", "Thu", "Fri" };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
             await LoadChartAsync();
             await LoadNewsAsync();
@@ -46,21 +55,53 @@
 
     private async Task LoadChartAsync()
     {
-        var options = new
+        var chartData = new
         {
-            chart = new { type = "line" },
-            title = new { text = "BTC Market Overview" },
-            xAxis = new { categories = new[] { "Mon", "Tue", "Wed", "Thu", "Fri" } },
-            yAxis = new { title = new { text = "Price (USD)" } },
-            series = new[] {
-                new {
-                    name = "BTC",
-                    data = new[] { 27000, 27350, 26800, 27500, 28000 }
+            type = "line",
+            data = new
+            {
+                labels = btcCategories.ToArray(),
+                datasets = new[]
+                {
+                    new
+                    {
+                        label = "BTC Price (USD)",
+                        data = btcPrices.ToArray(),
+                        borderColor = "rgb(75, 192, 192)",
+                        backgroundColor = "rgba(75, 192, 192, 0.2)",
+                        tension = 0.1,
+                        fill = true
+                    }
+                }
+            },
+            options = new
+            {
+                responsive = true,
+                maintainAspectRatio = false,
+                plugins = new
+                {
+                    title = new
+                    {
+                        display = true,
+                        text = "Bitcoin Price Trend"
+                    }
+                },
+                scales = new
+                {
+                    y = new
+                    {
+                        beginAtZero = false,
+                        title = new
+                        {
+                            display = true,
+                            text = "Price (USD)"
+                        }
+                    }
                 }
             }
         };
 
-        await JS.InvokeVoidAsync("renderHighChart", "btcChart", options);
+        await JS.InvokeVoidAsync("renderChart", "btcChart", chartData);
     }
 
     private async Task LoadNewsAsync()
@@ -79,7 +120,7 @@
 
     class NewsItem
     {
-        public string Title { get; set; }
-        public string Url { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
     }
 }
