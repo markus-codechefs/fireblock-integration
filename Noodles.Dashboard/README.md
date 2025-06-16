@@ -11,7 +11,7 @@ A modern Blazor Server application for managing cryptocurrency portfolios with F
 
 ## Deployment
 
-This app is deployed on Azure App Service. See `DEPLOYMENT.md` for detailed instructions.
+This app is deployed on Azure App Service using GitHub Actions. See `DEPLOYMENT.md` for detailed instructions.
 
 ## Local Development
 
@@ -20,4 +20,8 @@ cd Noodles.Dashboard
 dotnet run
 ```
 
-Visit `http://localhost:5126` to see the app running locally. 
+Visit `http://localhost:5126` to see the app running locally.
+
+## GitHub Actions
+
+This repository uses GitHub Actions for automated deployment to Azure App Service. 
