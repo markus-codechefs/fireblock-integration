@@ -1,109 +1,186 @@
-# 🚀 Deploying to Vercel
+# 🚀 Deploying Your Blazor Server App to Azure
 
-## Overview
-This guide will help you deploy your Blazor Server app to Vercel. While Blazor Server typically requires a persistent connection, we'll use Vercel's serverless functions to make it work.
+## 🎯 **Recommended: Azure App Service**
 
-## Prerequisites
-- Vercel account connected to GitHub
-- .NET 8.0 SDK installed locally
+Azure App Service is the **perfect platform** for your Blazor Server app because:
+- ✅ **Native .NET support**
+- ✅ **Persistent connections** (required for Blazor Server)
+- ✅ **Easy GitHub integration**
+- ✅ **Free tier available**
+- ✅ **Automatic HTTPS**
+- ✅ **Global CDN**
+
+## 🚀 **Step-by-Step Azure Deployment**
+
+### **Prerequisites**
+- Azure account (free tier available)
 - GitHub repository with your code
+- .NET 8.0 SDK (for local testing)
 
-## Step 1: Prepare Your Repository
+### **Step 1: Create Azure App Service**
 
-1. **Push your code to GitHub** (if not already done):
-   ```bash
-   git add .
-   git commit -m "Prepare for Vercel deployment"
-   git push origin main
-   ```
+1. **Go to [Azure Portal](https://portal.azure.com)**
+2. **Click "Create a resource"**
+3. **Search for "App Service"**
+4. **Click "Create"**
 
-## Step 2: Connect to Vercel
+### **Step 2: Configure App Service**
 
-1. **Go to [Vercel Dashboard](https://vercel.com/dashboard)**
-2. **Click "New Project"**
-3. **Import your GitHub repository**
-4. **Configure the project settings**:
-   - **Framework Preset**: Other
-   - **Build Command**: `dotnet publish -c Release -o dist`
-   - **Output Directory**: `dist`
-   - **Install Command**: Leave empty
+Fill in the basics:
+- **Subscription**: Your Azure subscription
+- **Resource Group**: Create new (e.g., `noodles-dashboard-rg`)
+- **App name**: `noodles-dashboard` (or your preferred name)
+- **Publish**: Code
+- **Runtime stack**: `.NET 8 (LTS)`
+- **Operating System**: Windows
+- **Region**: Choose closest to your users
 
-## Step 3: Environment Variables
+### **Step 3: Plan Configuration**
 
-Add these environment variables in your Vercel project settings:
+- **Plan**: Choose "Free F1" for testing
+- **SKU and size**: F1 (Free) - 1 GB RAM, 60 minutes/day
+- **Click "Review + create"**
+- **Click "Create"**
 
-### For Production (Real Fireblocks API):
+### **Step 4: Deploy from GitHub**
+
+1. **After App Service is created, go to your app**
+2. **In the left menu, click "Deployment Center"**
+3. **Choose "GitHub" as source**
+4. **Authorize Azure to access your GitHub**
+5. **Select your repository**: `markus-codechefs/fireblock-integration`
+6. **Branch**: `main`
+7. **Build Provider**: App Service Build Service
+8. **Click "Save"**
+
+### **Step 5: Configure Environment Variables**
+
+1. **Go to "Configuration" in your App Service**
+2. **Add these Application settings**:
+
 ```
 FIREBLOCKS_API_KEY=your_api_key_here
-FIREBLOCKS_PRIVATE_KEY_PATH=/tmp/private_key.pem
-FIREBLOCKS_BASE_URL=https://api.fireblocks.io/
-```
-
-### For Development (Mock API):
-```
-FIREBLOCKS_API_KEY=
 FIREBLOCKS_BASE_URL=https://sandbox-api.fireblocks.io/
 ```
 
-## Step 4: Deploy
+3. **Click "Save"**
 
-1. **Click "Deploy"**
-2. **Wait for the build to complete**
-3. **Your app will be available at**: `https://your-project-name.vercel.app`
+### **Step 6: Deploy and Test**
 
-## Step 5: Custom Domain (Optional)
+1. **Go back to "Deployment Center"**
+2. **Click "Sync"** to trigger deployment
+3. **Wait for build to complete** (2-3 minutes)
+4. **Click "Browse"** to test your app
 
-1. **Go to your project settings in Vercel**
-2. **Click "Domains"**
-3. **Add your custom domain**
-4. **Follow the DNS configuration instructions**
+## 🌐 **Your App URL**
 
-## Troubleshooting
+Once deployed, your app will be live at:
+`https://your-app-name.azurewebsites.net`
 
-### Common Issues:
+## 🔧 **Alternative Hosting Options**
 
-1. **Build Failures**:
-   - Check that all dependencies are properly referenced
-   - Ensure .NET 8.0 is specified in the project file
+### **Railway (Great Alternative)**
+- ✅ **Excellent .NET support**
+- ✅ **Simple deployment**
+- ✅ **Good free tier**
 
-2. **Runtime Errors**:
-   - Check environment variables are set correctly
-   - Verify Fireblocks API credentials
+**Steps:**
+1. Go to [Railway](https://railway.app)
+2. Connect your GitHub repo
+3. Auto-detects .NET
+4. Add environment variables
+5. Deploy
 
-3. **Performance Issues**:
-   - Blazor Server on Vercel may have cold start delays
-   - Consider using Blazor WebAssembly for better performance
+### **Render**
+- ✅ **Supports .NET**
+- ✅ **Easy setup**
+- ✅ **Free tier available**
 
-## Alternative: Blazor WebAssembly
+**Steps:**
+1. Go to [Render](https://render.com)
+2. New Web Service
+3. Connect GitHub repo
+4. Choose .NET runtime
+5. Deploy
 
-For better performance on Vercel, consider converting to Blazor WebAssembly:
+## ❌ **Not Recommended: Vercel**
 
-1. **Create new WebAssembly project**:
-   ```bash
-   dotnet new blazorwasm -n Noodles.Dashboard.Wasm
-   ```
+**Vercel has limitations for Blazor Server:**
+- ❌ **No .NET runtime by default**
+- ❌ **Serverless function timeouts**
+- ❌ **No persistent connections**
+- ❌ **Cold start delays**
 
-2. **Copy your components and services**
-3. **Update for client-side rendering**
-4. **Deploy as static site**
+## 📊 **Platform Comparison**
 
-## Security Notes
+| Platform | Blazor Server | Free Tier | Ease | Performance |
+|----------|---------------|-----------|------|-------------|
+| **Azure** | ✅ Perfect | ✅ Yes | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Railway** | ✅ Great | ✅ Yes | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Render** | ✅ Good | ✅ Yes | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Vercel** | ❌ Limited | ✅ Yes | ⭐⭐⭐ | ⭐⭐ |
+
+## 🔐 **Security Best Practices**
 
 - **Never commit API keys** to your repository
 - **Use environment variables** for all secrets
-- **Enable HTTPS** for production deployments
-- **Set up proper CORS** if needed
+- **HTTPS is automatic** on Azure
+- **Enable authentication** if needed
 
-## Monitoring
+## 🐛 **Troubleshooting**
 
-- **Use Vercel Analytics** to monitor performance
-- **Set up error tracking** with services like Sentry
-- **Monitor API usage** with Fireblocks dashboard
+### **Deployment Issues:**
+1. **Check "Deployment Center" logs**
+2. **Verify .NET 8.0 runtime is selected**
+3. **Ensure environment variables are set**
+4. **Check web.config is in the root**
 
-## Support
+### **Runtime Issues:**
+1. **Check "Log stream" for errors**
+2. **Verify Configuration settings**
+3. **Test locally with `dotnet run`**
 
-If you encounter issues:
-1. Check Vercel deployment logs
-2. Review .NET build output
-3. Test locally with `dotnet run`
-4. Check environment variable configuration 
+### **Common Errors:**
+- **Build fails**: Check .NET version compatibility
+- **App won't start**: Verify web.config configuration
+- **API errors**: Check environment variables
+
+## 📈 **Monitoring & Scaling**
+
+### **Azure App Service Features:**
+- **Application Insights** for monitoring
+- **Auto-scaling** based on demand
+- **Custom domains** support
+- **SSL certificates** management
+
+### **Upgrade Path:**
+- **Start with Free F1** for testing
+- **Upgrade to Basic B1** for production
+- **Scale to Premium** for high traffic
+
+## 🎯 **Next Steps After Deployment**
+
+1. **Test all features** (Portfolio, Onboarding)
+2. **Add custom domain** if needed
+3. **Set up monitoring** with Application Insights
+4. **Configure backup** and disaster recovery
+5. **Set up CI/CD** for automatic deployments
+
+## 📞 **Support Resources**
+
+- **Azure Documentation**: https://docs.microsoft.com/azure/app-service/
+- **Blazor Documentation**: https://docs.microsoft.com/aspnet/core/blazor/
+- **Azure Support**: Available in Azure Portal
+
+## 🎉 **Success Checklist**
+
+- [ ] App Service created successfully
+- [ ] GitHub repository connected
+- [ ] Environment variables configured
+- [ ] Deployment completed
+- [ ] App accessible via URL
+- [ ] All features working
+- [ ] HTTPS working
+- [ ] Custom domain (optional)
+
+**Your Blazor Server app is now ready for production on Azure!** 🚀 
