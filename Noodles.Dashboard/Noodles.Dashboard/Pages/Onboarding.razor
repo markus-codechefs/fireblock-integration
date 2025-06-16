@@ -1,4 +1,7 @@
 ﻿@page "/onboarding"
+@using Noodles.Dashboard.Services
+@inject FireblocksService FireblocksService
+@inject ILogger<Onboarding> Logger
 
 <PageTitle>Client Onboarding</PageTitle>
 
@@ -16,55 +19,69 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">New Client Information</h5>
                     
-                    <form>
+                    <EditForm Model="@clientInfo" OnValidSubmit="CreateWallet">
+                        <DataAnnotationsValidator />
+                        
                         <div class="mb-3">
-                            <label for="clientName" class="form-label">Client Name</label>
-                            <input type="text" class="form-control" id="clientName" placeholder="Enter client's full name">
+                            <label for="clientName" class="form-label">Client Name *</label>
+                            <InputText id="clientName" class="form-control" @bind-Value="clientInfo.Name" placeholder="Enter client's full name" />
+                            <ValidationMessage For="@(() => clientInfo.Name)" />
                         </div>
 
                         <div class="mb-3">
-                            <label for="clientEmail" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="clientEmail" placeholder="client@example.com">
+                            <label for="clientEmail" class="form-label">Email Address *</label>
+                            <InputText type="email" id="clientEmail" class="form-control" @bind-Value="clientInfo.Email" placeholder="client@example.com" />
+                            <ValidationMessage For="@(() => clientInfo.Email)" />
                         </div>
 
                         <div class="mb-3">
-                            <label for="walletType" class="form-label">Wallet Type</label>
-                            <select class="form-control" id="walletType">
+                            <label for="walletType" class="form-label">Wallet Type *</label>
+                            <InputSelect id="walletType" class="form-control" @bind-Value="clientInfo.WalletType">
                                 <option value="">Select wallet type</option>
                                 <option value="vault">Vault Account</option>
                                 <option value="embedded">Embedded Wallet</option>
                                 <option value="exchange">Exchange Account</option>
-                            </select>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => clientInfo.WalletType)" />
                         </div>
 
                         <div class="mb-3">
                             <label for="initialAssets" class="form-label">Initial Assets</label>
                             <div class="row">
                                 <div class="col-6">
-                                    <select class="form-control" id="assetType">
+                                    <InputSelect class="form-control" @bind-Value="clientInfo.AssetType">
+                                        <option value="">Select asset</option>
                                         <option value="BTC">Bitcoin (BTC)</option>
                                         <option value="ETH">Ethereum (ETH)</option>
                                         <option value="USDC">USD Coin (USDC)</option>
-                                    </select>
+                                    </InputSelect>
                                 </div>
                                 <div class="col-6">
-                                    <input type="number" class="form-control" id="assetAmount" placeholder="Amount">
+                                    <InputNumber class="form-control" @bind-Value="clientInfo.AssetAmount" placeholder="Amount" />
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" rows="3" placeholder="Additional notes about this client"></textarea>
+                            <InputTextArea class="form-control" @bind-Value="clientInfo.Notes" rows="3" placeholder="Additional notes about this client" />
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-primary btn-lg" @onclick="CreateWallet">
-                                <span class="me-2">🚀</span>
-                                Create Wallet
+                            <button type="submit" class="btn btn-primary btn-lg" disabled="@isCreating">
+                                @if (isCreating)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Creating Wallet...</span>
+                                }
+                                else
+                                {
+                                    <span class="me-2">🚀</span>
+                                    <span>Create Wallet</span>
+                                }
                             </button>
                         </div>
-                    </form>
+                    </EditForm>
 
                     @if (isWalletCreated)
                     {
@@ -72,9 +89,26 @@
                             <div class="d-flex align-items-center">
                                 <span class="me-2">🎉</span>
                                 <div>
-                                    <strong>Success!</strong> Wallet created successfully.
+                                    <strong>Success!</strong> @walletResult.Message
                                     <br>
-                                    <small class="text-muted">Client ID: @walletId</small>
+                                    <small class="text-muted">Vault ID: @walletResult.VaultAccountId</small>
+                                    @if (!string.IsNullOrEmpty(assetResult?.Address))
+                                    {
+                                        <br>
+                                        <small class="text-muted">@clientInfo.AssetType Address: @assetResult.Address</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger mt-4">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">⚠️</span>
+                                <div>
+                                    <strong>Error!</strong> @errorMessage
                                 </div>
                             </div>
                         </div>
@@ -86,13 +120,80 @@
 </div>
 
 @code {
+    private ClientInfo clientInfo = new();
+    private bool isCreating = false;
     private bool isWalletCreated = false;
-    private string walletId = "";
+    private string errorMessage = "";
+    private WalletCreationResult? walletResult;
+    private AssetCreationResult? assetResult;
 
-    private void CreateWallet()
+    private async Task CreateWallet()
     {
-        // Simulate wallet creation
-        isWalletCreated = true;
-        walletId = Guid.NewGuid().ToString("N")[..8].ToUpper();
+        try
+        {
+            isCreating = true;
+            errorMessage = "";
+            isWalletCreated = false;
+            StateHasChanged();
+
+            Logger.LogInformation("Creating wallet for client: {Name}", clientInfo.Name);
+
+            // Create vault account
+            walletResult = await FireblocksService.CreateVaultAccountAsync(
+                clientInfo.Name, 
+                clientInfo.Email
+            );
+
+            if (!walletResult.Success)
+            {
+                errorMessage = walletResult.Message;
+                return;
+            }
+
+            // Create asset if specified
+            if (!string.IsNullOrEmpty(clientInfo.AssetType))
+            {
+                assetResult = await FireblocksService.CreateVaultAssetAsync(
+                    walletResult.VaultAccountId, 
+                    clientInfo.AssetType
+                );
+
+                if (!assetResult.Success)
+                {
+                    Logger.LogWarning("Vault created but asset creation failed: {Message}", assetResult.Message);
+                    // Don't fail the whole operation if asset creation fails
+                }
+            }
+
+            isWalletCreated = true;
+            Logger.LogInformation("Wallet created successfully. Vault ID: {VaultId}", walletResult.VaultAccountId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+            Logger.LogError(ex, "Error creating wallet");
+        }
+        finally
+        {
+            isCreating = false;
+            StateHasChanged();
+        }
+    }
+
+    public class ClientInfo
+    {
+        [Required(ErrorMessage = "Client name is required")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Email address is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Wallet type is required")]
+        public string WalletType { get; set; } = "";
+
+        public string AssetType { get; set; } = "";
+        public decimal? AssetAmount { get; set; }
+        public string Notes { get; set; } = "";
     }
 }
