@@ -10,6 +10,23 @@ Azure App Service is the **perfect platform** for your Blazor Server app because
 - ✅ **Automatic HTTPS**
 - ✅ **Global CDN**
 
+## 📁 **Project Structure**
+
+Your project has the following structure:
+```
+fireblock-integration/
+├── Noodles.Dashboard/
+│   ├── .deployment          # Azure deployment config
+│   ├── web.config           # Azure web server config
+│   ├── DEPLOYMENT.md        # This guide
+│   └── Noodles.Dashboard/   # Main project directory
+│       ├── Noodles.Dashboard.csproj
+│       ├── Program.cs
+│       ├── Pages/
+│       ├── Shared/
+│       └── Services/
+```
+
 ## 🚀 **Step-by-Step Azure Deployment**
 
 ### **Prerequisites**
@@ -71,6 +88,20 @@ FIREBLOCKS_BASE_URL=https://sandbox-api.fireblocks.io/
 2. **Click "Sync"** to trigger deployment
 3. **Wait for build to complete** (2-3 minutes)
 4. **Click "Browse"** to test your app
+
+## 🔧 **Azure Configuration Files**
+
+Your project includes these Azure-specific files:
+
+### **`.deployment`** (Root directory)
+```
+[config]
+command = dotnet publish Noodles.Dashboard/Noodles.Dashboard.csproj -c Release -o %DEPLOYMENT_TARGET%
+```
+
+### **`web.config`** (Root directory)
+- Configures IIS to run your .NET app
+- Handles routing and process management
 
 ## 🌐 **Your App URL**
 
@@ -134,6 +165,7 @@ Once deployed, your app will be live at:
 2. **Verify .NET 8.0 runtime is selected**
 3. **Ensure environment variables are set**
 4. **Check web.config is in the root**
+5. **Verify .deployment file points to correct project path**
 
 ### **Runtime Issues:**
 1. **Check "Log stream" for errors**
@@ -144,6 +176,7 @@ Once deployed, your app will be live at:
 - **Build fails**: Check .NET version compatibility
 - **App won't start**: Verify web.config configuration
 - **API errors**: Check environment variables
+- **MSB1003 error**: Ensure .deployment file points to correct .csproj path
 
 ## 📈 **Monitoring & Scaling**
 
