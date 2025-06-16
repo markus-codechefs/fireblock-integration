@@ -106,4 +106,4 @@ command = dotnet publish Noodles.Dashboard/Noodles.Dashboard.csproj -c Release -
 ## 🌐 **Your App URL**
 
 Once deployed, your app will be live at:
-`https://your-app-name.azurewebsites.net`
+`https://your-app-name.azurewebsites.net` 
