@@ -3,19 +3,56 @@
 <PageTitle>Noodles.Dashboard</PageTitle>
 
 <div class="d-flex">
-    <nav class="bg-dark text-white p-3" style="min-width: 200px; height: 100vh;">
+    <nav class="sidebar p-3" style="min-width: 250px; height: 100vh; position: sticky; top: 0;">
+        <div class="mb-4">
+            <h4 class="text-white mb-0">Noodles</h4>
+            <small class="text-muted">Fireblocks Integration</small>
+        </div>
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link text-white" href="/dashboard">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="/onboarding">Onboarding</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="">Trading</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="">Portfolio</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="">Transfer</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="">History</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="">Settings</a></li>
+            <li class="nav-item">
+                <a class="nav-link @(NavigationManager.Uri.EndsWith("/dashboard") ? "active" : "")" href="/dashboard">
+                    📊 Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(NavigationManager.Uri.EndsWith("/onboarding") ? "active" : "")" href="/onboarding">
+                    👤 Onboarding
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
+                    💱 Trading
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
+                    📈 Portfolio
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
+                    🔄 Transfer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
+                    📋 History
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
+                    ⚙️ Settings
+                </a>
+            </li>
         </ul>
     </nav>
 
-    <main class="p-4" style="flex-grow: 1;">
+    <main class="flex-grow-1">
         @Body
     </main>
 </div>
+
+@code {
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+}

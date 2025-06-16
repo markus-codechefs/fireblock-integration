@@ -3,36 +3,75 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">BTC Market Overview</h5>
-                <div style="height: 400px; position: relative;">
-                    <canvas id="btcChart"></canvas>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-2">Dashboard</h1>
+            <p class="text-muted">Monitor your crypto portfolio and market trends</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">BTC Market Overview</h5>
+                    <div class="chart-container">
+                        <canvas id="btcChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Portfolio Summary</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Total Value</span>
+                        <span class="h4 mb-0">$@portfolioValue.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Monthly Performance</span>
+                        <span class="@GetPerformanceClass() h5 mb-0">@monthlyPerformance %</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary">Buy Crypto</button>
+                        <button class="btn btn-outline-primary">Send Funds</button>
+                        <button class="btn btn-outline-secondary">View History</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card p-3 mb-3">
-            <h5>Portfolio Value</h5>
-            <p>$@portfolioValue</p>
 
-            <h6>Monthly Performance</h6>
-            <p class="@GetPerformanceClass()">@monthlyPerformance %</p>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">BTC News Feed</h5>
+                    <div class="row">
+                        @foreach(var item in btcNews)
+                        {
+                            <div class="col-md-4 mb-3">
+                                <div class="p-3 border rounded">
+                                    <a href="@item.Url" target="_blank" class="text-decoration-none">
+                                        <h6 class="mb-2">@item.Title</h6>
+                                        <small class="text-muted">Read more →</small>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-
-<div class="mt-4">
-    <h5>BTC News Feed</h5>
-    <ul>
-        @foreach(var item in btcNews)
-        {
-            <li><a href="@item.Url" target="_blank">@item.Title</a></li>
-        }
-    </ul>
 </div>
 
 @code {
@@ -67,10 +106,11 @@
                     {
                         label = "BTC Price (USD)",
                         data = btcPrices.ToArray(),
-                        borderColor = "rgb(75, 192, 192)",
-                        backgroundColor = "rgba(75, 192, 192, 0.2)",
-                        tension = 0.1,
-                        fill = true
+                        borderColor = "#6366f1",
+                        backgroundColor = "rgba(99, 102, 241, 0.1)",
+                        tension = 0.4,
+                        fill = true,
+                        borderWidth = 3
                     }
                 }
             },
@@ -82,8 +122,11 @@
                 {
                     title = new
                     {
-                        display = true,
-                        text = "Bitcoin Price Trend"
+                        display = false
+                    },
+                    legend = new
+                    {
+                        display = false
                     }
                 },
                 scales = new
@@ -91,11 +134,29 @@
                     y = new
                     {
                         beginAtZero = false,
-                        title = new
+                        grid = new
                         {
-                            display = true,
-                            text = "Price (USD)"
+                            color = "rgba(0, 0, 0, 0.05)"
+                        },
+                        ticks = new
+                        {
+                            callback = "function(value) { return '$' + value.toLocaleString(); }"
                         }
+                    },
+                    x = new
+                    {
+                        grid = new
+                        {
+                            display = false
+                        }
+                    }
+                },
+                elements = new
+                {
+                    point = new
+                    {
+                        radius = 0,
+                        hoverRadius = 6
                     }
                 }
             }
@@ -109,9 +170,9 @@
         // For demo purposes, mock data
         btcNews = new List<NewsItem>
         {
-            new NewsItem { Title = "Bitcoin breaks $28,000", Url = "https://news.bitcoin.com" },
-            new NewsItem { Title = "ETF inflows boost BTC", Url = "https://cointelegraph.com" },
-            new NewsItem { Title = "Whale alert: large BTC moves", Url = "https://cryptobriefing.com" }
+            new NewsItem { Title = "Bitcoin breaks $28,000 resistance level", Url = "https://news.bitcoin.com" },
+            new NewsItem { Title = "ETF inflows continue to boost BTC sentiment", Url = "https://cointelegraph.com" },
+            new NewsItem { Title = "Whale alert: Large BTC movements detected", Url = "https://cryptobriefing.com" }
         };
     }
 
