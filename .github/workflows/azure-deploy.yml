@@ -13,6 +13,7 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
     - uses: actions/checkout@v4
@@ -34,10 +35,7 @@ jobs:
     - name: Login to Azure
       uses: azure/login@v2
       with:
-        client-id: 18e20473-c6d2-49e2-a60b-ab432567fe84
-        tenant-id: e45174aa-71ee-4da4-b010-e489b452bb36
-        subscription-id: 15ee4793-72f9-47b8-af3f-2b59938d1294
-        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v3
