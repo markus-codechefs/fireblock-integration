@@ -4,3 +4,4 @@ PoC for integrating services with fireblock.com API
 # Test deployment - fixed credentials
 # Test deployment - separate Azure secrets
 # Test deployment - with proper permissions
+# Test deployment - with proper permissions
