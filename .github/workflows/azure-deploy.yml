@@ -40,6 +40,6 @@ jobs:
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v3
       with:
-        app-name: ${{ secrets.AZURE_APP_NAME }}
+        app-name: bitcoin-concierge
         publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
         package: ./publish 
