@@ -41,5 +41,4 @@ jobs:
       uses: azure/webapps-deploy@v3
       with:
         app-name: bitcoin-concierge
-        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
         package: ./publish 
