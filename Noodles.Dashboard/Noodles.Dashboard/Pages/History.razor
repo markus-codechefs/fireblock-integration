@@ -1,0 +1,319 @@
+@page "/history"
+
+<PageTitle>Transaction History - Fireblocks Dashboard</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history me-2"></i>
+                        Transaction History
+                    </h3>
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Search transactions..." 
+                                   @bind="searchTerm" @bind:event="oninput" />
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th @onclick="@(() => SortBy("Date"))" style="cursor: pointer;">
+                                        Date/Time
+                                        @if (sortColumn == "Date")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Type"))" style="cursor: pointer;">
+                                        Type
+                                        @if (sortColumn == "Type")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Asset"))" style="cursor: pointer;">
+                                        Asset
+                                        @if (sortColumn == "Asset")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Amount"))" style="cursor: pointer;">
+                                        Amount
+                                        @if (sortColumn == "Amount")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Price"))" style="cursor: pointer;">
+                                        Price (USD)
+                                        @if (sortColumn == "Price")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Total"))" style="cursor: pointer;">
+                                        Total (USD)
+                                        @if (sortColumn == "Total")
+                                        {
+                                            <i class="fas @(sortAscending ? "fa-sort-up" : "fa-sort-down")"></i>
+                                        }
+                                    </th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in FilteredTransactions)
+                                {
+                                    <tr>
+                                        <td>@transaction.Date.ToString("MMM dd, yyyy HH:mm")</td>
+                                        <td>
+                                            <span class="badge @(transaction.Type == "Buy" ? "bg-success" : "bg-danger")">
+                                                @transaction.Type
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@transaction.AssetIcon" alt="@transaction.Asset" 
+                                                     style="width: 20px; height: 20px; margin-right: 8px;" />
+                                                @transaction.Asset
+                                            </div>
+                                        </td>
+                                        <td>@transaction.Amount.ToString("F6")</td>
+                                        <td>$@transaction.Price.ToString("F2")</td>
+                                        <td>$@transaction.Total.ToString("F2")</td>
+                                        <td>
+                                            <span class="badge @GetStatusBadgeClass(transaction.Status)">
+                                                @transaction.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewDetails(transaction)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    @if (!FilteredTransactions.Any())
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No transactions found matching your search criteria.</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                Showing @FilteredTransactions.Count() of @Transactions.Count() transactions
+                            </span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshData">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Transaction> Transactions { get; set; } = new();
+    private string searchTerm = "";
+    private string sortColumn = "Date";
+    private bool sortAscending = false;
+
+    private IEnumerable<Transaction> FilteredTransactions => Transactions
+        .Where(t => string.IsNullOrEmpty(searchTerm) || 
+                   t.Asset.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                   t.Type.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                   t.Status.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        .OrderBy(t => sortColumn switch
+        {
+            "Date" => sortAscending ? t.Date : (object)DateTime.MaxValue.Subtract(t.Date),
+            "Type" => sortAscending ? t.Type : (object)t.Type,
+            "Asset" => sortAscending ? t.Asset : (object)t.Asset,
+            "Amount" => sortAscending ? t.Amount : (object)t.Amount,
+            "Price" => sortAscending ? t.Price : (object)t.Price,
+            "Total" => sortAscending ? t.Total : (object)t.Total,
+            _ => t.Date
+        });
+
+    protected override void OnInitialized()
+    {
+        LoadMockData();
+    }
+
+    private void LoadMockData()
+    {
+        Transactions = new List<Transaction>
+        {
+            new Transaction
+            {
+                Id = "tx_001",
+                Date = DateTime.Now.AddDays(-1),
+                Type = "Buy",
+                Asset = "Bitcoin",
+                AssetIcon = "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
+                Amount = 0.125000m,
+                Price = 43250.00m,
+                Total = 5406.25m,
+                Status = "Completed"
+            },
+            new Transaction
+            {
+                Id = "tx_002",
+                Date = DateTime.Now.AddDays(-2),
+                Type = "Sell",
+                Asset = "Ethereum",
+                AssetIcon = "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+                Amount = 2.500000m,
+                Price = 2650.00m,
+                Total = 6625.00m,
+                Status = "Completed"
+            },
+            new Transaction
+            {
+                Id = "tx_003",
+                Date = DateTime.Now.AddDays(-3),
+                Type = "Buy",
+                Asset = "Cardano",
+                AssetIcon = "https://cryptologos.cc/logos/cardano-ada-logo.png",
+                Amount = 1000.000000m,
+                Price = 0.45m,
+                Total = 450.00m,
+                Status = "Completed"
+            },
+            new Transaction
+            {
+                Id = "tx_004",
+                Date = DateTime.Now.AddDays(-4),
+                Type = "Buy",
+                Asset = "Solana",
+                AssetIcon = "https://cryptologos.cc/logos/solana-sol-logo.png",
+                Amount = 25.000000m,
+                Price = 98.50m,
+                Total = 2462.50m,
+                Status = "Pending"
+            },
+            new Transaction
+            {
+                Id = "tx_005",
+                Date = DateTime.Now.AddDays(-5),
+                Type = "Sell",
+                Asset = "Bitcoin",
+                AssetIcon = "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
+                Amount = 0.050000m,
+                Price = 43500.00m,
+                Total = 2175.00m,
+                Status = "Completed"
+            },
+            new Transaction
+            {
+                Id = "tx_006",
+                Date = DateTime.Now.AddDays(-6),
+                Type = "Buy",
+                Asset = "Polkadot",
+                AssetIcon = "https://cryptologos.cc/logos/polkadot-new-dot-logo.png",
+                Amount = 150.000000m,
+                Price = 6.80m,
+                Total = 1020.00m,
+                Status = "Completed"
+            },
+            new Transaction
+            {
+                Id = "tx_007",
+                Date = DateTime.Now.AddDays(-7),
+                Type = "Buy",
+                Asset = "Chainlink",
+                AssetIcon = "https://cryptologos.cc/logos/chainlink-link-logo.png",
+                Amount = 200.000000m,
+                Price = 12.50m,
+                Total = 2500.00m,
+                Status = "Failed"
+            },
+            new Transaction
+            {
+                Id = "tx_008",
+                Date = DateTime.Now.AddDays(-8),
+                Type = "Sell",
+                Asset = "Ethereum",
+                AssetIcon = "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+                Amount = 1.250000m,
+                Price = 2700.00m,
+                Total = 3375.00m,
+                Status = "Completed"
+            }
+        };
+    }
+
+    private void SortBy(string column)
+    {
+        if (sortColumn == column)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            sortColumn = column;
+            sortAscending = true;
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = "";
+    }
+
+    private void RefreshData()
+    {
+        LoadMockData();
+    }
+
+    private void ViewDetails(Transaction transaction)
+    {
+        // TODO: Implement transaction details modal or navigation
+        Console.WriteLine($"Viewing details for transaction: {transaction.Id}");
+    }
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Completed" => "bg-success",
+        "Pending" => "bg-warning",
+        "Failed" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    public class Transaction
+    {
+        public string Id { get; set; } = "";
+        public DateTime Date { get; set; }
+        public string Type { get; set; } = "";
+        public string Asset { get; set; } = "";
+        public string AssetIcon { get; set; } = "";
+        public decimal Amount { get; set; }
+        public decimal Price { get; set; }
+        public decimal Total { get; set; }
+        public string Status { get; set; } = "";
+    }
+} 
