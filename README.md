@@ -8,3 +8,4 @@ PoC for integrating services with fireblock.com API
 # Restart deployment
 # Try deployment again
 # Start deployment with client secret
+# Deploy with environment production
